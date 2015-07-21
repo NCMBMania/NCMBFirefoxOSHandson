@@ -11,12 +11,25 @@
     <header id="top-toolbar">
       <h1>画像ギャラリー</h1>
     </header>
-
+   
+    <!-- 写真を並べて表示する部分 -->
+    <div class="grid-table">
+      <div class="grid-table-body">
+      </div>
+    </div>
+    
+    <!-- 写真を並べる時のテンプレート  -->
+    <div class="templates">
+      <div class="grid-table-cell tappable" id="grid-table-cell-template">
+        <img src="" >
+      </div>
+    </div>
+    
     <!-- 写真を撮るためのボタン -->
     <div class="no-border-button tappable" style="position : relative">
       写真を撮る
       <form action="">
-	<input type="file" id="image-file" name="image" style="opacity: 0.0; position : absolute; left : 0; right : 0; top : 0; bottom : 0; z-index : 20;" />
+        <input type="file" id="image-file" name="image" style="opacity: 0.0; position : absolute; left : 0; right : 0; top : 0; bottom : 0; z-index : 20;" />
       </form>
     </div>
 

@@ -6,7 +6,7 @@ window.addEventListener("load", function() {
   
   var GalleryController = {
     init : function() {
-      console.log(GalleryController);
+      GalleryController.refresh();  // 写真のリストをリフレッシュ
       $('#image-file').change(function() {
         GalleryController.upload();
       });
@@ -25,12 +25,43 @@ window.addEventListener("load", function() {
         ncmbFile.save().then(function() {
           // アップロード成功
           console.log("アップロードしました！");
+          GalleryController.refresh();  // 写真のリストをリフレッシュ
         }, function(error) {
           // アップロード失敗
           console.log("アップロード失敗しました", error);
         });
       }
+    },
+    
+    // 写真データの取得
+    refresh : function() {
+      var query = new NCMB.Query("file");
+      query.find().then(function (files) {
+          console.log(files);
+          GalleryController.render(files);        	
+        },
+        function () {
+          console.log(err);
+        }
+      );
+    },
+    
+    // 写真データの描画
+    render : function(files) {
+      var cellTemplate = $('#grid-table-cell-template')[0];
+      var fragment = document.createDocumentFragment();
+
+      files.forEach(function(file) {
+        console.log("file", file);
+        var cell = cellTemplate.cloneNode(true);
+        var objFile = new NCMB.File(file.get('fileName'), null, null, null);
+        objFile.fetchImgSource($('img', cell).get(0));
+        fragment.appendChild(cell);
+      });
+      console.log(fragment);
+      $('.grid-table-body').empty().append(fragment); 
     }
+
   };
   GalleryController.init();
 });
