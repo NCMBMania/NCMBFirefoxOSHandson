@@ -1,26 +1,29 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ja">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1">
-
-    <title>Hello World</title>
-
-    <style>
-      body {
-        border: 1px solid black;
-      }
-    </style>
-
-    <!-- Inline scripts are forbidden in Firefox OS apps (CSP restrictions),
-         so we use a script file. -->
-    <script src="javascripts/ncmb-latest.min.js"></script>
-    <script src="app.js" defer></script>
-
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ニフティクラウドmobile backend × FirefoxOSアプリ</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
   </head>
-
   <body>
-    <!-- This code is in the public domain. Enjoy! -->
-    <h1>Hello World</h1>
+    <!-- ヘッダー -->
+    <header id="top-toolbar">
+      <h1>画像ギャラリー</h1>
+    </header>
+
+    <!-- 写真を撮るためのボタン -->
+    <div class="no-border-button tappable" style="position : relative">
+      写真を撮る
+      <form action="">
+	<input type="file" id="image-file" name="image" style="opacity: 0.0; position : absolute; left : 0; right : 0; top : 0; bottom : 0; z-index : 20;" />
+      </form>
+    </div>
+
+    <!-- JavaScriptライブラリの読み込み -->
+    <script src="javascripts/ncmb-latest.min.js"></script>
+    <script src="javascripts/tappable.js"></script>
+    <script src="javascripts/zepto.min.js"></script>
+    <script src="app.js"></script>
   </body>
 </html>
