@@ -10,6 +10,11 @@ window.addEventListener("load", function() {
       $('#image-file').change(function() {
         GalleryController.upload();
       });
+      // 写真をタップした時のイベント
+      $('.grid-table-body').on('click', '.tappable', function(e) {
+        console.log($(e.target));
+        location.href = 'detail.html#' + $(e.target).attr("data-filename");
+      });
     },
     
     // 画像をアップロードする
@@ -56,6 +61,8 @@ window.addEventListener("load", function() {
         var cell = cellTemplate.cloneNode(true);
         var objFile = new NCMB.File(file.get('fileName'), null, null, null);
         objFile.fetchImgSource($('img', cell).get(0));
+        // 以下を追加
+        $(cell).find("img").attr("data-filename", file.get('fileName')); // ファイル名を残す
         fragment.appendChild(cell);
       });
       console.log(fragment);
@@ -63,5 +70,30 @@ window.addEventListener("load", function() {
     }
 
   };
-  GalleryController.init();
+  
+  var PhotoController = {
+    init : function() {
+      this.filename = location.hash.replace(/^#/, "");
+      // 戻るをタップした時の処理
+      $('#back').on('click', function() {
+        location.href = 'index.html';
+      });
+      // 写真を表示
+      this.show();
+    },
+    
+    // 写真の表示処理を行う
+    show: function () {
+      var objFile = new NCMB.File(this.filename, null, null, null);
+      objFile.fetchImgSource($('#img').get(0));
+    },    
+  };
+
+  if (document.location.pathname == "/index.html") {
+    // これまで通り
+    GalleryController.init();
+  }else{
+    // 追加
+    PhotoController.init();
+  }
 });
