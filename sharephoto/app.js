@@ -1,19 +1,15 @@
 window.addEventListener("load", function() {
   console.log("Hello World!");
-  var application_key = "f814b6cc168f4837dd9d22d4c3b37d87dde5645238d60d2e2497c90f9113cd1c"; // アプリケーションキー
-  var client_key = "be16d26ec36ce4dad0cff7f0c95aea8f122cb2a499832d8cd9b8acecc3fb2a43"; // クライアントキー
+  var application_key = "cd9e16e539b6aa8bf567e90b95aec87472e3d957ec1183b535fa70f1f0067052"; // アプリケーションキー
+  var client_key = "3de0306f0a03b8698040820f6cb309141011985af493e863a9504fd813e52c9f"; // クライアントキー
   NCMB.initialize(application_key, client_key);  // 初期化の実行  
   
   var GalleryController = {
     init : function() {
-      GalleryController.refresh();  // 写真のリストをリフレッシュ
+      console.log(GalleryController);
+      GalleryController.refresh();
       $('#image-file').change(function() {
         GalleryController.upload();
-      });
-      // 写真をタップした時のイベント
-      $('.grid-table-body').on('click', '.tappable', function(e) {
-        console.log($(e.target));
-        location.href = 'detail.html#' + $(e.target).attr("data-filename");
       });
     },
     
@@ -26,24 +22,64 @@ window.addEventListener("load", function() {
         if (!(/\.(png|jpg|jpeg|gif)$/i).test(file.name)) {
           return true;
         }
-        var ncmbFile = new NCMB.File(Date.now() + file.name, file);
-        ncmbFile.save().then(function() {
-          // アップロード成功
-          console.log("アップロードしました！");
-          GalleryController.refresh();  // 写真のリストをリフレッシュ
-        }, function(error) {
-          // アップロード失敗
-          console.log("アップロード失敗しました", error);
-        });
+        
+        // ファイルリーダーオブジェクト
+        var reader = new FileReader();
+        // 縮小画像を当てはめる画像オブジェクト
+        var image = new Image();
+        
+        // ファイルリーダーで読み込んだら以下の処理を実行
+        reader.onloadend = function() {
+          
+          // 画像オブジェクトに読み込んだら以下の処理を実行
+          image.onload = function() {
+            // 画像を加工するためのCanvasオブジェクト生成
+            var canvas = $("<canvas />")[0];
+            var max  = 200; // 加工する画像の幅
+            ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, 0, 0);
+            if (image.width < image.height) {
+              // 縦長の場合
+              canvas.height = max; // 高さ固定
+              canvas.width  = max * image.width / image.height; // 加工後の画像の高さ
+            }else{
+              canvas.width  = max; // 幅固定
+              canvas.height = max * image.height / image.width; // 加工後の画像の高さ
+            }
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height); // 縮小処理
+            
+            // toDataURLで取り出せるデータはBase64なのでBlobに変換します。
+            var data = toBlob(canvas.toDataURL());
+            
+            // NCMB ファイルストレージの生成
+            var ncmbFile = new NCMB.File(Date.now() + file.name, data, "image/png");
+            
+            // 保存処理
+            ncmbFile.save().then(function() {
+              // アップロード成功
+              console.log("アップロードしました！");
+              GalleryController.refresh();
+            }, function(error) {
+              // アップロード失敗
+              console.log("アップロード失敗しました", error);
+            });
+          };
+          
+          // ファイルリーダーの結果を画像オブジェクトに適用
+          image.src = reader.result;
+        };
+        
+        // ファイルリーダーの読み込み処理開始
+        reader.readAsDataURL(file);        
       }
     },
-    
-    // 写真データの取得
+
     refresh : function() {
       var query = new NCMB.Query("file");
       query.find().then(function (files) {
           console.log(files);
-          GalleryController.render(files);        	
+          GalleryController.render(files);          
         },
         function () {
           console.log(err);
@@ -51,7 +87,6 @@ window.addEventListener("load", function() {
       );
     },
     
-    // 写真データの描画
     render : function(files) {
       var cellTemplate = $('#grid-table-cell-template')[0];
       var fragment = document.createDocumentFragment();
@@ -70,8 +105,10 @@ window.addEventListener("load", function() {
     }
 
   };
-  
-  var PhotoController = {
+  GalleryController.init();
+});
+
+var PhotoController = {
     init : function() {
       this.filename = location.hash.replace(/^#/, "");
       // 戻るをタップした時の処理
@@ -97,3 +134,20 @@ window.addEventListener("load", function() {
     PhotoController.init();
   }
 });
+
+function toBlob(base64) {
+  var bin = atob(base64.replace(/^.*,/, ''));
+  var buffer = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) {
+    buffer[i] = bin.charCodeAt(i);
+  }
+  // Blobを作成
+  try{
+    var blob = new Blob([buffer.buffer], {
+      type: 'image/png'
+    });
+  }catch (e){
+    return false;
+  }
+  return blob;
+}
